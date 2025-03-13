@@ -27,6 +27,10 @@ class Square(Function):
 class Exp(Function):
     def forward(self, x):
         return np.exp(x)
+    
+class AddOne(Function):
+    def forward(self, x):
+        return x + 1
 
 
 def numerical_diff(f, x, eps=1e-4):
@@ -52,4 +56,18 @@ def f(x):
 
 x = Variable(np.array(0.5))
 dy = numerical_diff(f, x)
+print(dy)
+
+
+# y = (1 + e^x)^2 함수 정의
+def h(x):
+    A = Exp()
+    B = AddOne()
+    C = Square()
+    return C(B(A(x)))
+
+
+# 미분값을 구하기 위해 x = 1에서 계산
+x = Variable(np.array(1.0))
+dy = numerical_diff(h, x)
 print(dy)
