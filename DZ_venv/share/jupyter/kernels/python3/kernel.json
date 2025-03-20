@@ -1,0 +1,14 @@
+{
+ "argv": [
+  "d:/인공지능_특론/steps/DZ_venv\\python.exe",
+  "-m",
+  "ipykernel_launcher",
+  "-f",
+  "{connection_file}"
+ ],
+ "display_name": "Python 3 (ipykernel)",
+ "language": "python",
+ "metadata": {
+  "debugger": true
+ }
+}
