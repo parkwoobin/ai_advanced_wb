@@ -21,8 +21,16 @@ def goldstein(x, y):
     return z
 
 
+def beale(x, y):
+    term1 = (Variable(np.array(1.5)) - x + x * y) ** 2
+    term2 = (Variable(np.array(2.25)) - x + x * y**2) ** 2
+    term3 = (Variable(np.array(2.625)) - x + x * y**3) ** 2
+    return term1 + term2 + term3
+
 x = Variable(np.array(1.0))
-y = Variable(np.array(1.0))
-z = goldstein(x, y)  # sphere(x, y) / matyas(x, y)
+y = Variable(np.array(0.0))
+z = beale(x, y)
 z.backward()
-print(x.grad, y.grad)
+
+print("x의 기울기:", x.grad)
+print("y의 기울기:", y.grad)
