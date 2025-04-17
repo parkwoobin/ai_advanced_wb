@@ -1,7 +1,9 @@
-digraph g{
-1 [label="x", color = orange, style = filled]
-2 [label="y", color = orange, style = filled]
-3 [label="Exp", color = lightblue, style = filled, shape = box]
-1 -> 3
-3 -> 2
+digraph g {
+node2707759310800 [label="y", color=orange, style=filled]
+node2707759311952 [label="Add", color=lightblue, style=filled, shape=box]
+node2707759304272 -> node2707759311952
+node2707759304144 -> node2707759311952
+node2707759311952 -> node2707759310800
+node2707759304272 [label="x0", color=orange, style=filled]
+node2707759304144 [label="x1", color=orange, style=filled]
 }

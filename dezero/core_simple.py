@@ -3,6 +3,9 @@ import numpy as np
 import contextlib
 
 
+# =============================================================================
+# Config
+# =============================================================================
 class Config:
     enable_backprop = True
 
@@ -21,6 +24,9 @@ def no_grad():
     return using_config('enable_backprop', False)
 
 
+# =============================================================================
+# Variable / Function
+# =============================================================================
 class Variable:
     __array_priority__ = 200
 
@@ -102,6 +108,7 @@ class Variable:
                 for y in f.outputs:
                     y().grad = None  # y is weakref
 
+
 def as_variable(obj):
     if isinstance(obj, Variable):
         return obj
@@ -139,59 +146,10 @@ class Function:
     def backward(self, gys):
         raise NotImplementedError()
 
-class Neg(Function):
-    def forward(self, x):
-        return -x
 
-    def backward(self, gy):
-        return -gy
-
-
-def neg(x):
-    return Neg()(x)
-
-
-class Sub(Function):
-    def forward(self, x0, x1):
-        y = x0 - x1
-        return y
-
-    def backward(self, gy):
-        return gy, -gy
-
-
-def sub(x0, x1):
-    x1 = as_array(x1)
-    return Sub()(x0, x1)
-
-
-def rsub(x0, x1):
-    x1 = as_array(x1)
-    return sub(x1, x0)
-
-
-class Div(Function):
-    def forward(self, x0, x1):
-        y = x0 / x1
-        return y
-
-    def backward(self, gy):
-        x0, x1 = self.inputs[0].data, self.inputs[1].data
-        gx0 = gy / x1
-        gx1 = gy * (-x0 / x1 ** 2)
-        return gx0, gx1
-
-
-def div(x0, x1):
-    x1 = as_array(x1)
-    return Div()(x0, x1)
-
-
-def rdiv(x0, x1):
-    x1 = as_array(x1)
-    return div(x1, x0)
-
-
+# =============================================================================
+# 사칙연산 / 연산자 오버로드
+# =============================================================================
 class Add(Function):
     def forward(self, x0, x1):
         y = x0 + x1
@@ -220,6 +178,60 @@ def mul(x0, x1):
     x1 = as_array(x1)
     return Mul()(x0, x1)
 
+
+class Neg(Function):
+    def forward(self, x):
+        return -x
+
+    def backward(self, gy):
+        return -gy
+
+
+def neg(x):
+    return Neg()(x)
+
+
+class Sub(Function):
+    def forward(self, x0, x1):
+        y = x0 - x1
+        return y
+
+    def backward(self, gy):
+        return gy, -gy
+
+
+def sub(x0, x1):
+    x1 = as_array(x1)
+    return Sub()(x0, x1)
+
+
+def rsub(x0, x1):
+    x1 = as_array(x1)
+    return Sub()(x1, x0)
+
+
+class Div(Function):
+    def forward(self, x0, x1):
+        y = x0 / x1
+        return y
+
+    def backward(self, gy):
+        x0, x1 = self.inputs[0].data, self.inputs[1].data
+        gx0 = gy / x1
+        gx1 = gy * (-x0 / x1 ** 2)
+        return gx0, gx1
+
+
+def div(x0, x1):
+    x1 = as_array(x1)
+    return Div()(x0, x1)
+
+
+def rdiv(x0, x1):
+    x1 = as_array(x1)
+    return Div()(x1, x0)
+
+
 class Pow(Function):
     def __init__(self, c):
         self.c = c
@@ -239,6 +251,7 @@ class Pow(Function):
 def pow(x, c):
     return Pow(c)(x)
 
+
 def setup_variable():
     Variable.__add__ = add
     Variable.__radd__ = add
@@ -251,7 +264,7 @@ def setup_variable():
     Variable.__rtruediv__ = rdiv
     Variable.__pow__ = pow
 
-
+    
 setup_variable()
 a = Variable(np.array(3.0))
 b = Variable(np.array(2.0))
