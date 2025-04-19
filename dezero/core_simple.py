@@ -274,6 +274,6 @@ y = add(mul(a, b), c)
 y = a * b + c
 y.backward()
 
-print(y)
-print(a.grad)
-print(b.grad)
+# print(y)
+# print(a.grad)
+# print(b.grad)
