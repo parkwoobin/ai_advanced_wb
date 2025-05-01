@@ -2,36 +2,7 @@ import weakref
 import numpy as np
 import contextlib
 
-# =============================================================================
-# Public API
-# =============================================================================
-__all__ = [
-    "Config",
-    "Variable",
-    "Function",
-    "Add",
-    "Mul",
-    "Neg",
-    "Sub",
-    "Div",
-    "Pow",
-    "using_config",
-    "no_grad",
-    "as_array",
-    "as_variable",
-    "add",
-    "mul",
-    "neg",
-    "sub",
-    "rsub",
-    "div",
-    "rdiv",
-    "pow"
-]
 
-# =============================================================================
-# Config
-# =============================================================================
 class Config:
     enable_backprop = True
 
@@ -50,15 +21,12 @@ def no_grad():
     return using_config('enable_backprop', False)
 
 
-# =============================================================================
-# Variable / Function
-# =============================================================================
 class Variable:
     __array_priority__ = 200
 
-    def __init__(self, data, name=None): # __init__ : 초기화 함수, data : 인스턴스 변수
+    def __init__(self, data, name=None):
         if data is not None:
-            if not isinstance(data, np.ndarray): # ndarray만 취급
+            if not isinstance(data, np.ndarray):
                 raise TypeError('{} is not supported'.format(type(data)))
 
         self.data = data
@@ -99,10 +67,9 @@ class Variable:
     def cleargrad(self):
         self.grad = None
 
-    def backward(self, retain_grad=False, create_graph=False): # create_graph=False 역전파 활성/비활성 모드
+    def backward(self, retain_grad=False, create_graph=False):
         if self.grad is None:
-            self.grad = Variable(np.ones_like(self.data)) # 이전에 self.grad = np.ones_like(self.data) 변경
-
+            self.grad = Variable(np.ones_like(self.data))
         funcs = []
         seen_set = set()
 
@@ -116,16 +83,13 @@ class Variable:
 
         while funcs:
             f = funcs.pop()
-
-            # 역전파 계산(메인 처리)
-            gys = [output().grad for output in f.outputs]  #  출력 변수들(Variable 인스턴스)의 grad들을 모음. grad는 ndarray 인스턴스 참조
-            
+            gys = [output().grad for output in f.outputs] 
             with using_config('enable_backprop', create_graph):
-                gxs = f.backward(*gys) # backward에 ndarray 인스턴스가 담긴 리스트 전달
+                gxs = f.backward(*gys)
                 if not isinstance(gxs, tuple):
                     gxs = (gxs,)
 
-                for x, gx in zip(f.inputs, gxs): # backward의 출력인 미분값들(gxs)을 함수의 입력 변수들(f.inputs)의 grad에 할당
+                for x, gx in zip(f.inputs, gxs):
                     if x.grad is None:
                         x.grad = gx
                     else:
@@ -136,7 +100,7 @@ class Variable:
 
             if not retain_grad:
                 for y in f.outputs:
-                    y().grad = None  # y는 weakref
+                    y().grad = None  
 
 
 def as_variable(obj):
@@ -155,7 +119,6 @@ class Function:
     def __call__(self, *inputs):
         inputs = [as_variable(x) for x in inputs]
 
-        # 순전파 계산(메인 처리, data를 꺼내 xs에 모으고 forward 호출하여 순전파 계산)
         xs = [x.data for x in inputs]
         ys = self.forward(*xs)
         if not isinstance(ys, tuple):
@@ -164,7 +127,6 @@ class Function:
 
         if Config.enable_backprop:
             self.generation = max([x.generation for x in inputs])
-            # 연결을 만듦(함수와 변수 연결)
             for output in outputs:
                 output.set_creator(self)
             self.inputs = inputs
@@ -179,9 +141,7 @@ class Function:
         raise NotImplementedError()
 
 
-# =============================================================================
-# 사칙연산 / 연산자 오버로드
-# =============================================================================
+
 class Add(Function):
     def forward(self, x0, x1):
         y = x0 + x1
@@ -202,7 +162,7 @@ class Mul(Function):
         return y
 
     def backward(self, gy):
-        x0, x1 = self.inputs # 이전에 self.inputs[0].data, self.inputs[1].data 변경
+        x0, x1 = self.inputs
         return gy * x1, gy * x0
 
 
@@ -229,6 +189,7 @@ class Sub(Function):
         return y
 
     def backward(self, gy):
+        x0, x1 = self.inputs
         return gy, -gy
 
 
@@ -248,7 +209,7 @@ class Div(Function):
         return y
 
     def backward(self, gy):
-        x0, x1 = self.inputs[0].data, self.inputs[1].data
+        x0, x1 = self.inputs
         gx0 = gy / x1
         gx1 = gy * (-x0 / x1 ** 2)
         return gx0, gx1
@@ -273,14 +234,16 @@ class Pow(Function):
         return y
 
     def backward(self, gy):
-        x = self.inputs[0].data
+        x = self.inputs[0]
         c = self.c
+
         gx = c * x ** (c - 1) * gy
         return gx
 
 
 def pow(x, c):
     return Pow(c)(x)
+
 
 
 def setup_variable():
