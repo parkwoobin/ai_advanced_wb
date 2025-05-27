@@ -108,7 +108,7 @@ class Transpose(Function):
         axes_len = len(self.axes)
         inv_axes = tuple(np.argsort([ax % axes_len for ax in self.axes]))
         return Variable(gy.data.transpose(inv_axes))  # gy.data를 transpose하고 Variable로 감싸기
-
+ 
 def transpose(x, axes=None):
     return Transpose(axes)(x)
 #--

@@ -8,7 +8,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from dezero.core import Variable
 from functions import square, sin, cos, exp, log
 import numpy as np  # numpy 추가
-
+ 
 def run_calc():
     x = Variable(np.array(3.0), name='x')  # float 데이터를 numpy 배열로 변환
 

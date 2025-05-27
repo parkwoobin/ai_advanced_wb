@@ -19,6 +19,6 @@ def simple_demo():
     print("최종 출력값 y:", y.data)
     print("x에 대한 미분 dy/dx:", x.grad)
 
-
+ 
 if __name__ == '__main__':
     simple_demo()

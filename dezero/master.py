@@ -25,7 +25,7 @@ def get_function(name):
         return F.tanh
     else:
         raise ValueError("지원하지 않는 함수입니다.")
-
+ 
 
 def simulate_sgd_step(x_val):
     log = []
